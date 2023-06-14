@@ -220,6 +220,14 @@ func (c *Compiler) Compile(conf *yaml_types.Workflow) (*backend_types.Config, er
 
 			name := fmt.Sprintf("%s_%s_%d", c.prefix, nameServices, i)
 			step := c.createProcess(name, container, nameServices)
+
+			// only inject netrc if it's a trusted repo
+			if !c.netrcOnlyTrusted || c.trustedPipeline {
+				for k, v := range c.cloneEnv {
+					step.Environment[k] = v
+				}
+			}
+
 			stage.Steps = append(stage.Steps, step)
 		}
 		config.Stages = append(config.Stages, stage)
@@ -251,6 +259,14 @@ func (c *Compiler) Compile(conf *yaml_types.Workflow) (*backend_types.Config, er
 
 		name := fmt.Sprintf("%s_step_%d", c.prefix, i)
 		step := c.createProcess(name, container, namePipeline)
+
+		// only inject netrc if it's a trusted repo
+		if !c.netrcOnlyTrusted || c.trustedPipeline {
+			for k, v := range c.cloneEnv {
+				step.Environment[k] = v
+			}
+		}
+
 		stage.Steps = append(stage.Steps, step)
 	}
 
